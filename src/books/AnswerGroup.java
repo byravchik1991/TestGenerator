@@ -9,9 +9,13 @@ import java.util.Set;
  * Date: 13.04.13
  */
 public class AnswerGroup implements Cloneable {
-    private Set<Answer> answers = new HashSet<Answer>();
+    private Set<Answer> answers;
 
     private double probability = 1;
+
+    public AnswerGroup(int size) {
+        answers = new HashSet<Answer>(size);
+    }
 
     public void addAnswer(Answer answer) {
         answers.add(answer);
@@ -19,7 +23,14 @@ public class AnswerGroup implements Cloneable {
     }
 
     public boolean contains(Answer answer) {
-        return answers.contains(answer);
+        for (Answer currentAnswer : answers) {
+            if (currentAnswer.getQuestionNumber() == answer.getQuestionNumber()) {
+                return true;
+            }
+        }
+
+        return false;
+        //return answers.contains(answer);
     }
 
     public Set<Answer> getAnswers() {

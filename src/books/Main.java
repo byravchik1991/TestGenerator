@@ -2,7 +2,7 @@ package books;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -24,15 +24,16 @@ public class Main {
 
             int b = scanner.nextInt();
 
-            SimpleTestGenerator testGenerator = new SimpleTestGenerator(n, sizes, b);
-            Test[] tests = testGenerator.generateTestsForSingleAnswer();
+            SmartTestGenerator testGenerator = new SmartTestGenerator(sizes, b);
+            List<Test> tests = testGenerator.generateTests();
 
             for (Test test : tests) {
-                System.out.println(Arrays.toString(test.getAnswers()));
+                System.out.println(test);
             }
 
-
         } catch (FileNotFoundException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (CloneNotSupportedException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }

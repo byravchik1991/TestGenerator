@@ -1,6 +1,6 @@
 package books;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -8,5 +8,5 @@ import java.util.Set;
  * Date: 14.04.13
  */
 public interface TestGenerator {
-    Set<Test> generateTests(int testCount);
+    List<Test> generateTests();
 }

@@ -2,8 +2,10 @@ package books;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Scanner;
+import java.util.logging.Logger;
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,7 +13,7 @@ import java.util.Scanner;
  * Date: 12.04.13
  */
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws CloneNotSupportedException {
         try {
             Scanner scanner = new Scanner(new File("input.txt"));
 
@@ -24,17 +26,46 @@ public class Main {
 
             int b = scanner.nextInt();
 
-            SmartTestGenerator testGenerator = new SmartTestGenerator(sizes, b);
-            List<Test> tests = testGenerator.generateTests();
-
-            for (Test test : tests) {
-                System.out.println(test);
+            String testGeneratorType = null;
+            if (args.length > 0) {
+                testGeneratorType = args[0];
             }
 
+            AbstractTestGenerator testGenerator;
+            if ("simple".equals(testGeneratorType)) {
+                testGenerator = new SimpleTestGenerator(sizes);
+
+            } else if ("random".equals(testGeneratorType)) {
+                testGenerator = new RandomTestGenerator(sizes);
+
+            } else {
+                if (args.length > 1) {
+                    int precision = Integer.parseInt(args[1]);
+                    if ((precision > n) || (precision < 1)) {
+                        Logger.getLogger("Test Generator").severe("Точность должна быть в пределах от 1 до " + n);
+                        return;
+                    }
+                    testGenerator = new SmartTestGenerator(sizes, precision);
+
+                } else {
+                    testGenerator = new SmartTestGenerator(sizes);
+                }
+            }
+
+            List<Test> tests = testGenerator.generateTests(b);
+            PrintWriter printWriter = new PrintWriter(new File("output.txt"));
+
+            for (Test test : tests) {
+                printWriter.println(test);
+            }
+
+            printWriter.close();
+
         } catch (FileNotFoundException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            Logger.getLogger("Test Generator").severe(e.getMessage());
+
+        } catch (NumberFormatException e) {
+            Logger.getLogger("Test Generator").severe(e.getMessage());
         }
     }
 }

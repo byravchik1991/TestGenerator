@@ -8,9 +8,13 @@ import java.util.Set;
  * User: Иришка
  * Date: 13.04.13
  */
+
+
 public class AnswerGroup implements Cloneable {
+    //сочетание ответов, проверяемых в тесте
     private Set<Answer> answers;
 
+    //вероятность выбора такой комбинации ответов
     private double probability = 1;
 
     public AnswerGroup(int size) {
@@ -30,7 +34,6 @@ public class AnswerGroup implements Cloneable {
         }
 
         return false;
-        //return answers.contains(answer);
     }
 
     public Set<Answer> getAnswers() {
@@ -39,6 +42,14 @@ public class AnswerGroup implements Cloneable {
 
     public void setAnswers(Set<Answer> answers) {
         this.answers = answers;
+    }
+
+    public double getProbability() {
+        return probability;
+    }
+
+    public void setProbability(double probability) {
+        this.probability = probability;
     }
 
     @Override
@@ -58,14 +69,6 @@ public class AnswerGroup implements Cloneable {
         return answers.hashCode();
     }
 
-    public double getProbability() {
-        return probability;
-    }
-
-    public void setProbability(double probability) {
-        this.probability = probability;
-    }
-
     @Override
     protected Object clone() throws CloneNotSupportedException {
         AnswerGroup newAnswerGroup = (AnswerGroup) super.clone();
@@ -77,7 +80,6 @@ public class AnswerGroup implements Cloneable {
         }
         newAnswerGroup.answers = newAnswers;
 
-        // newAnswerGroup.answers = (Set<Answer>) ((HashSet)answers).clone();
         return newAnswerGroup;
     }
 }

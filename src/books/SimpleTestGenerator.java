@@ -1,76 +1,79 @@
 package books;
 
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Иришка
  * Date: 12.04.13
  */
-public class SimpleTestGenerator {
-    private int questionCount;
-    private int answersCount[];
-    private int maxTestCount;
-
+public class SimpleTestGenerator extends AbstractTestGenerator {
+    //содержит информацию о том, сколько раз был выбран каждый вариант ответа в каждом вопросе
     private int[][] answersMap;
 
-    public SimpleTestGenerator(int questionCount, int[] answersCount, int maxTestCount) {
-        this.questionCount = questionCount;
-        this.answersCount = answersCount;
-        this.maxTestCount = maxTestCount;
+    private Set<Test> acceptedTests = new HashSet<Test>();
 
+    private Random random = new Random();
+
+    public SimpleTestGenerator(int[] sizes) {
+        super(sizes);
+
+        initializeAnswerMap(sizes);
+    }
+
+    private void initializeAnswerMap(int[] sizes) {
         answersMap = new int[questionCount][];
 
         for (int i = 0; i < questionCount; i++) {
-            answersMap[i] = new int[answersCount[i]];
+            answersMap[i] = new int[sizes[i]];
         }
     }
 
-    public Test generateNextTest() {
+    @Override
+    protected Test findNextBestTest() {
         Test test = new Test(questionCount);
+        fillTestWithAnswers(test);
 
-        for (int i = 0; i < questionCount; i++) {
-
+        while (acceptedTests.contains(test)) {
+            test = new Test(questionCount);
+            fillTestWithAnswers(test);
         }
 
-        return null;
+        return test;
     }
 
-    public Test[] generateTestsForSingleAnswer() {
-        int testCount = getTestCountForSingleAnswer();
-        Test[] tests = new Test[testCount];
-
-        for (int i = 0; i < testCount; i++) {
-            Test test = new Test(questionCount);
-
-            for (int j = 0; j < questionCount; j++) {
-                test.setAnswer(findNextAnswer(j), j);
+    private void fillTestWithAnswers(Test test) {
+        for (int j = 0; j < questionCount; j++) {
+            if (random.nextInt(2) == 0) {
+                test.setAnswer(findIndexOfMinValue(answersMap[j]), j);
+            } else {
+                test.setAnswer(random.nextInt(sizes[j]), j);
             }
-
-            tests[i] = test;
-            updateAnswersMapByNewTest(test);
         }
-
-        return tests;
     }
 
-    private int getTestCountForSingleAnswer() {
-        return ArrayHelper.findMaxValue(answersCount);
-    }
-
-    private int findNextAnswer(int questionNumber) {
-        return ArrayHelper.findIndexOfMinValue(answersMap[questionNumber]);
-    }
-
-    private void updateAnswersMapByNewTest(Test test) {
+    @Override
+    protected void updateTestGeneratorByNewTest(Test test) {
         for (int i = 0; i < test.getQuestionsCount(); i++) {
             answersMap[i][test.getAnswer(i)] = answersMap[i][test.getAnswer(i)] + 1;
         }
+
+        acceptedTests.add(test);
     }
 
-    public int getQuestionCount() {
-        return questionCount;
-    }
+    private int findIndexOfMinValue(int[] array) {
+        int minAnswerNumber = 0;
+        int min = array[minAnswerNumber];
 
-    public int[] getAnswersCount() {
-        return answersCount;
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] < min) {
+                min = array[i];
+                minAnswerNumber = i;
+            }
+        }
+
+        return minAnswerNumber;
     }
 }

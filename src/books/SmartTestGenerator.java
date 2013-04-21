@@ -8,25 +8,40 @@ import java.util.logging.Logger;
  * User: Иришка
  * Date: 13.04.13
  */
-public class SmartTestGenerator implements TestGenerator {
-    private int questionCount;
-    private int[] sizes;
+public class SmartTestGenerator extends AbstractTestGenerator {
+    //всевозможные тесты, которые можно сгенерировать на данном множестве вопросов
+    private Set<SmartTest> possibleTests;
 
-    private Set<Test> possibleTests;
-    private List<Test> acceptedTests;
-
+    //вероятности выбора каждого ответа в вопросе
     private Map<Integer, Double> probabilityMap;
 
-    private int testsCount;
+    //максимальное количество вопросов в группе, вероятность которой мы еще учитываем
+    private int answerGroupMaxSize;
 
-    public SmartTestGenerator(int[] sizes, int testsCount) throws CloneNotSupportedException {
-        this.questionCount = sizes.length;
-        this.sizes = sizes;
-        this.testsCount = testsCount;
+    public SmartTestGenerator(int[] sizes) throws CloneNotSupportedException {
+        this(sizes, sizes.length);
+    }
+
+    public SmartTestGenerator(int[] sizes, int answerGroupMaxSize) throws CloneNotSupportedException {
+        super(sizes);
+
+        this.answerGroupMaxSize = answerGroupMaxSize;
 
         initializeProbabilityMap();
 
         generatePossibleTests();
+    }
+
+    public Set<SmartTest> getPossibleTests() {
+        return possibleTests;
+    }
+
+    public int getAnswerGroupMaxSize() {
+        return answerGroupMaxSize;
+    }
+
+    public void setAnswerGroupMaxSize(int answerGroupMaxSize) {
+        this.answerGroupMaxSize = answerGroupMaxSize;
     }
 
     private void initializeProbabilityMap() {
@@ -38,6 +53,7 @@ public class SmartTestGenerator implements TestGenerator {
         }
     }
 
+    //генерация всех возможных тестов на данном множестве вопросов
     private void generatePossibleTests() throws CloneNotSupportedException {
         int possibleTestsCount = getPossibleTestsNumber();
         Logger.getLogger(this.getClass().getName()).info("Генерация всех возможных " + possibleTestsCount + " тестов");
@@ -46,29 +62,64 @@ public class SmartTestGenerator implements TestGenerator {
             throw new IllegalStateException("Размерность задачи слишком велика");
         }
 
-        possibleTests = new HashSet<Test>();
-        Test test = new Test(questionCount);
+        possibleTests = new HashSet<SmartTest>();
+        SmartTest test = new SmartTest(questionCount);
         possibleTests.add(test);
         generateNewTestsRecursive(test, 0);
 
-        int answerGroupsCount = getNumberOfTestGroups();
-        int importantDepth = getDimensionOfLastImportantAnswerGroup(testsCount);
         Logger.getLogger(this.getClass().getName()).info(
-                "Инициализация всех " + importantDepth + " сочетаний ответов, проверяемых тестами из " + questionCount);
+                "Инициализация сочетаний из " + answerGroupMaxSize + " ответов для каждого теста");
 
-        int tests = 0;
-        AnswerGroupSet template = initializeAnswerGroupSet(answerGroupsCount, importantDepth);
-        for (Test currentTest : possibleTests) {
+        int testsGenerated = 0;
+        SmartTest template = createTemplateSmartTest(answerGroupMaxSize);
+        for (SmartTest currentTest : possibleTests) {
             fillTemplate(currentTest, template);
-            tests++;
-            if (tests % 1000 == 0) {
-                Logger.getLogger(this.getClass().getName()).info("Обработано " + tests + " тестов");
+            testsGenerated++;
+            if (testsGenerated % 1000 == 0) {
+                Logger.getLogger(this.getClass().getName()).info("Обработано " + testsGenerated + " тестов");
             }
         }
     }
 
-    private void fillTemplate(Test currentTest, AnswerGroupSet template) throws CloneNotSupportedException {
-        AnswerGroupSet answerGroupSet = new AnswerGroupSet(template.getAnswerGroups().size());
+    private void generateNewTestsRecursive(SmartTest test, int questionNumber) throws CloneNotSupportedException {
+        if (questionNumber == questionCount) {
+            return;
+        }
+
+        int answersCount = sizes[questionNumber];
+
+        SmartTest[] tests = new SmartTest[answersCount];
+        tests[0] = test;
+
+        for (int i = 0; i < answersCount; i++) {
+            SmartTest currentTest = tests[i];
+
+            if (currentTest == null) {
+                currentTest = (SmartTest) test.clone();
+                currentTest.setAnswer(i, questionNumber);
+                possibleTests.add(currentTest);
+            } else {
+                currentTest.setAnswer(i, questionNumber);
+            }
+
+            generateNewTestsRecursive(currentTest, questionNumber + 1);
+        }
+    }
+
+    //возвращает общее количество тестов, которые можно провести на данном множестве вопросов
+    public int getPossibleTestsNumber() {
+        int number = 1;
+
+        for (int i = 0; i < sizes.length; i++) {
+            number *= sizes[i];
+        }
+
+        return number;
+    }
+
+    //заполнение всех групп ответов в тесте согласно шаблону
+    private void fillTemplate(SmartTest currentTest, SmartTest template) throws CloneNotSupportedException {
+        currentTest.setAnswerGroups(new HashSet<AnswerGroup>(template.getAnswerGroups().size()));
 
         for (AnswerGroup templateAnswerGroup : template.getAnswerGroups()) {
             AnswerGroup answerGroup = new AnswerGroup(templateAnswerGroup.getAnswers().size());
@@ -83,26 +134,26 @@ public class SmartTestGenerator implements TestGenerator {
                 answerGroup.addAnswer(answer);
             }
 
-            answerGroupSet.addAnswerGroup(answerGroup);
+            currentTest.addAnswerGroup(answerGroup);
         }
-
-        currentTest.setAnswerGroupSet(answerGroupSet);
     }
 
-    private AnswerGroupSet initializeAnswerGroupSet(int answerGroupsCount, int importantDepth) throws CloneNotSupportedException {
-        AnswerGroupSet answerGroupSet = new AnswerGroupSet(answerGroupsCount);
+    /*создает шаблон теста, где сгенерированы все группы вопросов,
+    но для каждого вопроса указан только его номер, и не указан номер ответа*/
+    private SmartTest createTemplateSmartTest(int importantDepth) throws CloneNotSupportedException {
+        SmartTest smartTest = new SmartTest(questionCount);
 
         for (int i = 0; i < questionCount - 1; i++) {
-            generateAnswerGroupsRecursive(new AnswerGroup(0), 1, answerGroupSet, importantDepth, i);
+            generateAnswerGroupsRecursive(new AnswerGroup(0), 1, smartTest, importantDepth, i);
         }
 
-        return answerGroupSet;
+        return smartTest;
     }
 
     private void generateAnswerGroupsRecursive(
             AnswerGroup parentAnswerGroup,
             int elementsCount,
-            AnswerGroupSet answerGroupSet,
+            SmartTest test,
             int importantDepth,
             int questionNumber) throws CloneNotSupportedException {
 
@@ -111,172 +162,41 @@ public class SmartTestGenerator implements TestGenerator {
         }
 
         for (int i = questionNumber; i < questionCount; i++) {
-            //for (Integer i : questionNumbersToIterate) {
             Answer answer = new Answer(i, 0);
 
             if (!parentAnswerGroup.contains(answer)) {
-                // if (!parentAnswerGroup.getQuestionNumbers().contains(i)) {
-                // Answer answer = new Answer(i, test.getAnswer(i));
                 answer.setProbability(probabilityMap.get(i));
 
-                AnswerGroup answerGroup = /*new AnswerGroup(elementsCount); // */(AnswerGroup) parentAnswerGroup.clone();
-/*                for (Answer parentGroupAnswer : parentAnswerGroup.getAnswers()) {
-                    answerGroup.addAnswer((Answer) parentGroupAnswer.clone());
-                }*/
+                AnswerGroup answerGroup = (AnswerGroup) parentAnswerGroup.clone();
 
                 answerGroup.addAnswer(answer);
-                answerGroupSet.addAnswerGroup(answerGroup);
+                test.addAnswerGroup(answerGroup);
 
                 generateAnswerGroupsRecursive(
                         answerGroup,
                         elementsCount + 1,
-                        answerGroupSet,
+                        test,
                         importantDepth,
                         questionNumber);
             }
         }
     }
 
-    private void generateNewTestsRecursive(Test test, int questionNumber) throws CloneNotSupportedException {
-        if (questionNumber == questionCount) {
-            return;
-        }
-
-        int answersCount = sizes[questionNumber];
-
-        Test[] tests = new Test[answersCount];
-        tests[0] = test;
-
-        for (int i = 0; i < answersCount; i++) {
-            Test currentTest = tests[i];
-
-            if (currentTest == null) {
-                currentTest = (Test) test.clone();
-                currentTest.setAnswer(i, questionNumber);
-                possibleTests.add(currentTest);
-            } else {
-                currentTest.setAnswer(i, questionNumber);
-            }
-
-            generateNewTestsRecursive(currentTest, questionNumber + 1);
-        }
-    }
-
-    public int getPossibleTestsNumber() {
-        int number = 1;
-
-        for (int i = 0; i < sizes.length; i++) {
-            number *= sizes[i];
-        }
-
-        return number;
-    }
-
-    public int getQuestionCount() {
-        return questionCount;
-    }
-
-    public int[] getSizes() {
-        return sizes;
-    }
-
-    public Set<Test> getPossibleTests() {
-        return possibleTests;
-    }
-
-    private Test findNextBestTest() {
+    @Override
+    protected Test findNextBestTest() {
         return Collections.max(possibleTests);
     }
 
-    public List<Test> generateTests() {
-        assert testsCount <= possibleTests.size();
+    @Override
+    protected void updateTestGeneratorByNewTest(Test acceptedTest) {
+        possibleTests.remove(acceptedTest);
 
-        Logger.getLogger(this.getClass().getName()).info("Выбор " + testsCount + " самых подходящих тестов");
-
-        acceptedTests = new ArrayList<Test>(testsCount);
-
-        for (int i = 0; i < testsCount; i++) {
-            Test test = findNextBestTest();
-            acceptedTests.add(test);
-            possibleTests.remove(test);
-            updateTestsQuality(test);
-        }
-
-        return acceptedTests;
-    }
-
-    private void updateTestsQuality(Test acceptedTest) {
-        for (Test test : possibleTests) {
-            for (AnswerGroup acceptedAnswerGroup : acceptedTest.getAnswerGroupSet().getAnswerGroups()) {
-                if (test.getAnswerGroupSet().getAnswerGroups().contains(acceptedAnswerGroup)) {
-                    test.getAnswerGroupSet().removeAnswerGroup(acceptedAnswerGroup);
+        for (SmartTest test : possibleTests) {
+            for (AnswerGroup acceptedAnswerGroup : ((SmartTest) acceptedTest).getAnswerGroups()) {
+                if (test.getAnswerGroups().contains(acceptedAnswerGroup)) {
+                    test.removeAnswerGroup(acceptedAnswerGroup);
                 }
             }
         }
-    }
-
-    public int getNumberOfTestGroups() {
-        int sum = questionCount;
-        for (int i = 2; i < questionCount; i++) {
-            sum += (int) (sum * ((questionCount - i + 1) / ((double) i)));
-        }
-
-        return sum;
-    }
-
-  /*  private int cnk(int n, int k) {
-        return (int) (factorial(n)/(((double) factorial(k)) * factorial(n-k)));
-    }
-
-    private long factorial(int k) {
-        long factorial = 1;
-
-        for(int i=2; i<=k; i++) {
-            factorial *= i;
-        }
-
-        return  factorial;
-    }*/
-
-    private int getRequiredTestsCountForCheckAnswerGroup(int groupDimension) {
-        Set<AnswerGroup> answerGroups = new HashSet<AnswerGroup>();
-
-        for (Test test : possibleTests) {
-            for (AnswerGroup answerGroup : test.getAnswerGroupSet().getAnswerGroups()) {
-                if (answerGroup.getAnswers().size() == groupDimension) {
-                    answerGroups.add(answerGroup);
-                }
-            }
-        }
-
-        int groupCheckedPerTest = questionCount / groupDimension;
-
-        return answerGroups.size() / groupCheckedPerTest;
-    }
-
-    private int getDimensionOfLastImportantAnswerGroup(int testsCount) {
-/*        Map<Integer, Integer> testsCountMap = new HashMap<Integer, Integer>(questionCount);
-
-        int bestCloseFactor = Math.abs(getRequiredTestsCountForCheckAnswerGroup(1) - testsCount);
-        int bestDimension = 1;
-        for (int i = 2; i <= questionCount; i++) {
-            int closeFactor = Math.abs(getRequiredTestsCountForCheckAnswerGroup(i) - testsCount);
-
-            if ((closeFactor < bestCloseFactor) || ((closeFactor == bestCloseFactor) && (bestDimension < i)))  {
-                bestCloseFactor = closeFactor;
-                bestDimension = i;
-            }
-        }
-
-        return  bestDimension + 1;*/
-        return questionCount / 2 + 1;
-    }
-
-    public int getTestsCount() {
-        return testsCount;
-    }
-
-    public void setTestsCount(int testsCount) {
-        this.testsCount = testsCount;
     }
 }

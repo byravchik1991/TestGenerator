@@ -7,11 +7,12 @@ import java.util.Arrays;
  * User: Иришка
  * Date: 12.04.13
  */
-public class Test implements Cloneable, Comparable {
-    private int questionsCount;
-    private int[] answers;
+public class Test {
+    //количество вопросов в тесте
+    protected int questionsCount;
 
-    private AnswerGroupSet answerGroupSet;
+    //ответы (номера ответов для каждого вопроса)
+    protected int[] answers;
 
     public Test(int n) {
         this.questionsCount = n;
@@ -41,6 +42,11 @@ public class Test implements Cloneable, Comparable {
     }
 
     @Override
+    public String toString() {
+        return Arrays.toString(answers);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -58,31 +64,5 @@ public class Test implements Cloneable, Comparable {
         int result = questionsCount;
         result = 31 * result + Arrays.hashCode(answers);
         return result;
-    }
-
-    @Override
-    public String toString() {
-        return Arrays.toString(answers);
-    }
-
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        Test newTest = (Test) super.clone();
-        newTest.answers = answers.clone();
-        return newTest;
-    }
-
-    @Override
-    public int compareTo(Object o) {
-        Test anotherTest = (Test) o;
-        return Double.compare(answerGroupSet.getQuality(), anotherTest.answerGroupSet.getQuality());
-    }
-
-    public AnswerGroupSet getAnswerGroupSet() {
-        return answerGroupSet;
-    }
-
-    public void setAnswerGroupSet(AnswerGroupSet answerGroupSet) {
-        this.answerGroupSet = answerGroupSet;
     }
 }

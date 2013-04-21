@@ -9,6 +9,7 @@ public class Answer implements Cloneable {
     private int questionNumber;
     private int answerNumber;
 
+    //вероятность выбора этого ответа
     private double probability;
 
     public Answer(int questionNumber, int answerNumber) {
@@ -32,6 +33,14 @@ public class Answer implements Cloneable {
         this.answerNumber = answerNumber;
     }
 
+    public double getProbability() {
+        return probability;
+    }
+
+    public void setProbability(double probability) {
+        this.probability = probability;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -50,14 +59,6 @@ public class Answer implements Cloneable {
         int result = questionNumber;
         result = 31 * result + answerNumber;
         return result;
-    }
-
-    public double getProbability() {
-        return probability;
-    }
-
-    public void setProbability(double probability) {
-        this.probability = probability;
     }
 
     @Override

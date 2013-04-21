@@ -8,5 +8,9 @@ import java.util.List;
  * Date: 14.04.13
  */
 public interface TestGenerator {
-    List<Test> generateTests();
+    //генерирует testCount подходящих тестов
+    List<Test> generateTests(int testCount);
+
+    //генерирует следующий подходящий тест
+    Test generateNextTest();
 }

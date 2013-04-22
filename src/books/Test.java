@@ -43,7 +43,13 @@ public class Test {
 
     @Override
     public String toString() {
-        return Arrays.toString(answers);
+        StringBuffer stringBuffer = new StringBuffer();
+
+        for (int i = 0; i < questionsCount; i++) {
+            stringBuffer.append(answers[i]).append(" ");
+        }
+
+        return stringBuffer.toString();
     }
 
     @Override

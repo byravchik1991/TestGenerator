@@ -43,7 +43,7 @@ public abstract class AbstractTestGenerator implements TestGenerator {
 
     @Override
     public List<Test> generateTests(int testCount) {
-        Logger.getLogger(this.getClass().getName()).info("Выбор " + testCount + " подходящих тестов");
+        Logger.getLogger(this.getClass().getName()).info("Selection of " + testCount + " tests");
 
         for (int i = 0; i < testCount; i++) {
             acceptedTests.add(generateNextTest());

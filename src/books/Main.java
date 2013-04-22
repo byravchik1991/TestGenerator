@@ -42,7 +42,7 @@ public class Main {
                 if (args.length > 1) {
                     int precision = Integer.parseInt(args[1]);
                     if ((precision > n) || (precision < 1)) {
-                        Logger.getLogger("Test Generator").severe("Точность должна быть в пределах от 1 до " + n);
+                        Logger.getLogger("Test Generator").severe("Accuracy should be in the range from 1 to " + n);
                         return;
                     }
                     testGenerator = new SmartTestGenerator(sizes, precision);

@@ -56,10 +56,10 @@ public class SmartTestGenerator extends AbstractTestGenerator {
     //генерация всех возможных тестов на данном множестве вопросов
     private void generatePossibleTests() throws CloneNotSupportedException {
         int possibleTestsCount = getPossibleTestsNumber();
-        Logger.getLogger(this.getClass().getName()).info("Генерация всех возможных " + possibleTestsCount + " тестов");
+        Logger.getLogger(this.getClass().getName()).info("Creation of " + possibleTestsCount + " possible tests");
 
         if (possibleTestsCount < 0) {
-            throw new IllegalStateException("Размерность задачи слишком велика");
+            throw new IllegalStateException("Dimension of the problem is too big");
         }
 
         possibleTests = new HashSet<SmartTest>();
@@ -68,7 +68,7 @@ public class SmartTestGenerator extends AbstractTestGenerator {
         generateNewTestsRecursive(test, 0);
 
         Logger.getLogger(this.getClass().getName()).info(
-                "Инициализация сочетаний из " + answerGroupMaxSize + " ответов для каждого теста");
+                "Initialization of combinations of " + answerGroupMaxSize + " answers for each test");
 
         int testsGenerated = 0;
         SmartTest template = createTemplateSmartTest(answerGroupMaxSize);
@@ -76,7 +76,7 @@ public class SmartTestGenerator extends AbstractTestGenerator {
             fillTemplate(currentTest, template);
             testsGenerated++;
             if (testsGenerated % 1000 == 0) {
-                Logger.getLogger(this.getClass().getName()).info("Обработано " + testsGenerated + " тестов");
+                Logger.getLogger(this.getClass().getName()).info("tests handled: " + testsGenerated);
             }
         }
     }

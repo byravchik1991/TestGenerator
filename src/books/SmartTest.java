@@ -1,8 +1,8 @@
 package books;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,10 +11,12 @@ import java.util.Set;
  */
 public class SmartTest extends Test implements Cloneable, Comparable {
     //множество всех групп ответов, проверяемых в тесте
-    private Set<AnswerGroup> answerGroups = new HashSet<AnswerGroup>();
+    private List<AnswerGroup> answerGroups = new ArrayList<AnswerGroup>();
 
     //"качество теста" (сумма вероятностей выпада всех групп ответов)
     private double quality = 0.0;
+
+    private boolean[] answerGroupsCheckStates;
 
     public SmartTest(int n) {
         super(n);
@@ -62,11 +64,11 @@ public class SmartTest extends Test implements Cloneable, Comparable {
         this.quality = quality;
     }
 
-    public Set<AnswerGroup> getAnswerGroups() {
+    public List<AnswerGroup> getAnswerGroups() {
         return answerGroups;
     }
 
-    public void setAnswerGroups(Set<AnswerGroup> answerGroups) {
+    public void setAnswerGroups(List<AnswerGroup> answerGroups) {
         this.answerGroups = answerGroups;
     }
 
@@ -86,5 +88,21 @@ public class SmartTest extends Test implements Cloneable, Comparable {
 
             assert quality >= 0;
         }
+    }
+
+    public boolean isAnswerGroupUnchecked(int n) {
+        return answerGroupsCheckStates[n];
+    }
+
+    public void setAnswerGroupChecked(int n, boolean isNew) {
+        answerGroupsCheckStates[n] = isNew;
+    }
+
+    public boolean[] getAnswerGroupsCheckStates() {
+        return answerGroupsCheckStates;
+    }
+
+    public void setAnswerGroupsCheckStates(boolean[] answerGroupsCheckStates) {
+        this.answerGroupsCheckStates = answerGroupsCheckStates;
     }
 }

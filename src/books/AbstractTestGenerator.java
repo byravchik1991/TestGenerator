@@ -19,6 +19,8 @@ public abstract class AbstractTestGenerator implements TestGenerator {
     //сгенерированные тесты
     protected List<Test> acceptedTests;
 
+    public static final int LOG_TESTS_COUNT = 100;
+
     protected AbstractTestGenerator(int[] sizes) {
         this.questionCount = sizes.length;
         this.sizes = sizes;
@@ -47,6 +49,10 @@ public abstract class AbstractTestGenerator implements TestGenerator {
 
         for (int i = 0; i < testCount; i++) {
             acceptedTests.add(generateNextTest());
+
+            if (i % LOG_TESTS_COUNT == 0) {
+                Logger.getLogger(AbstractTestGenerator.class.getName()).info(i + " tests selected");
+            }
         }
 
         return acceptedTests;

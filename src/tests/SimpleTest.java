@@ -92,6 +92,18 @@ public class SimpleTest {
         testTwoMistakes(testGenerator, tests);
     }
 
+/*    @Test
+    public void testTwoMistakesBadSmart() throws CloneNotSupportedException {
+        SmartTestGenerator testGenerator = createBadSmartTestGenerator(100);
+        List<books.Test> tests = testGenerator.generateTests(20);
+
+*//*        for (books.Test test : tests) {
+            System.out.println(test);
+        }*//*
+
+        testTwoMistakes(testGenerator, tests);
+    }*/
+
     @Test
     public void testTwoMistakesSimple() throws CloneNotSupportedException {
         SimpleTestGenerator testGenerator = createSimpleTestGenerator();
@@ -213,6 +225,12 @@ public class SimpleTest {
         int[] sizes = createSizesArray();
 
         return new SmartTestGenerator(sizes);
+    }
+
+    private SmartTestGenerator createBadSmartTestGenerator(int testsCount) throws CloneNotSupportedException {
+        int[] sizes = createSizesArray();
+
+        return new SmartTestGenerator(sizes, sizes.length, testsCount);
     }
 
     private int[] createSizesArray() {

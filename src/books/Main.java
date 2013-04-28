@@ -45,7 +45,21 @@ public class Main {
                         Logger.getLogger("Test Generator").severe("Accuracy should be in the range from 1 to " + n);
                         return;
                     }
-                    testGenerator = new SmartTestGenerator(sizes, precision);
+
+                    if (args.length > 2) {
+                        long possibleTestsCount = SmartTestGenerator.getPossibleTestsNumber(sizes);
+                        long desiredTestsCount = Long.parseLong(args[2]);
+
+                        if (possibleTestsCount < desiredTestsCount) {
+                            Logger.getLogger("Test Generator").severe("Max tests number = " + possibleTestsCount);
+                            return;
+                        }
+
+                        testGenerator = new SmartTestGenerator(sizes, precision, desiredTestsCount);
+
+                    } else {
+                        testGenerator = new SmartTestGenerator(sizes, precision);
+                    }
 
                 } else {
                     testGenerator = new SmartTestGenerator(sizes);

@@ -1,7 +1,7 @@
 package books;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,13 +12,13 @@ import java.util.Set;
 
 public class AnswerGroup implements Cloneable {
     //сочетание ответов, проверяемых в тесте
-    private Set<Answer> answers;
+    private List<Answer> answers;
 
     //вероятность выбора такой комбинации ответов
     private double probability = 1;
 
     public AnswerGroup(int size) {
-        answers = new HashSet<Answer>(size);
+        answers = new ArrayList<Answer>(size);
     }
 
     public void addAnswer(Answer answer) {
@@ -36,11 +36,11 @@ public class AnswerGroup implements Cloneable {
         return false;
     }
 
-    public Set<Answer> getAnswers() {
+    public List<Answer> getAnswers() {
         return answers;
     }
 
-    public void setAnswers(Set<Answer> answers) {
+    public void setAnswers(List<Answer> answers) {
         this.answers = answers;
     }
 
@@ -73,7 +73,7 @@ public class AnswerGroup implements Cloneable {
     protected Object clone() throws CloneNotSupportedException {
         AnswerGroup newAnswerGroup = (AnswerGroup) super.clone();
 
-        Set newAnswers = new HashSet(answers.size());
+        List newAnswers = new ArrayList(answers.size());
 
         for (Answer answer : answers) {
             newAnswers.add(answer.clone());
